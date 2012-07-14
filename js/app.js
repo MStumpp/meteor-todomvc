@@ -6,18 +6,18 @@ Session.set('editing_todo', null);
 
 if (Meteor.is_client) {
 
-    /////////////////////////////////////////////////////////////////////////
-    // The following two functions are taken from the official Meteor 
-    // "Todos" example
-    // The original code can be viewed at: https://github.com/meteor/meteor
-    /////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////
+	// The following two functions are taken from the official Meteor 
+	// "Todos" example
+	// The original code can be viewed at: https://github.com/meteor/meteor
+	/////////////////////////////////////////////////////////////////////////
 
 	// Returns an event_map key for attaching "ok/cancel" events to
 	// a text input (given by selector)
 	var okcancel_events = function (selector) {
 		return 'keyup '+selector+', keydown '+selector+', focusout '+selector;
 	};
-
+	
 	// Creates an event handler for interpreting "escape", "return", and "blur"
 	// on a text field and calling "ok" or "cancel" callbacks.
 	var make_okcancel_handler = function (options) {
@@ -28,7 +28,7 @@ if (Meteor.is_client) {
 			if (evt.type === 'keydown' && evt.which === 27) {
 				// escape = cancel
 				cancel.call(this, evt);
-
+	
 			} else if (evt.type === 'keyup' && evt.which === 13 || 
 				evt.type === 'focusout') {
 				// blur/return/enter = ok/submit if non-empty
