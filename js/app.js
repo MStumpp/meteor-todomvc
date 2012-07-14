@@ -119,7 +119,7 @@ if (Meteor.is_client) {
 		}
 	};
 	
-    ////
+	////
 	// Logic for the 'todo' partial representing a todo
 	////
 	
