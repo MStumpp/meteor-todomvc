@@ -48,12 +48,12 @@ if (Meteor.is_client) {
 	Template.todoapp.events = {};
 	
 	Template.todoapp.events[okcancel_events('#new-todo')] =
-	  make_okcancel_handler({
-		ok: function (title, evt) {
-		  Todos.insert({title: title, completed: false, created_at: new Date().getTime()});
-		  evt.target.value = "";
-		}
-	  });
+		make_okcancel_handler({
+			ok: function (title, evt) {
+			  Todos.insert({title: title, completed: false, created_at: new Date().getTime()});
+			  evt.target.value = "";
+			}
+		});
 	
 	Template.main.todos = function() {
 		var filter = {};
@@ -103,15 +103,15 @@ if (Meteor.is_client) {
 	};
 	
 	Template.todo.events[okcancel_events('li.editing input.edit')] =
-	  make_okcancel_handler({
-		  ok: function (value) {
-			Todos.update(this._id, {$set: {title: value}});
-			Session.set('editing_todo', null);
-		  },
-		  cancel: function () {
-			Session.set('editing_todo', null);
-		  }
-	  });
+		make_okcancel_handler({
+			ok: function (value) {
+				Todos.update(this._id, {$set: {title: value}});
+				Session.set('editing_todo', null);
+			},
+				cancel: function () {
+				Session.set('editing_todo', null);
+			}
+		});
 	
 	Template.footer.todos_not_completed = function() {
 		return Todos.find({completed: false}).count();
