@@ -12,8 +12,8 @@ if (Meteor.is_client) {
     // The original code can be viewed at: https://github.com/meteor/meteor
     /////////////////////////////////////////////////////////////////////////
 
-    // Returns an event_map key for attaching "ok/cancel" events to
-    // a text input (given by selector)
+	// Returns an event_map key for attaching "ok/cancel" events to
+	// a text input (given by selector)
 	var okcancel_events = function (selector) {
 		return 'keyup '+selector+', keydown '+selector+', focusout '+selector;
 	};
@@ -23,7 +23,7 @@ if (Meteor.is_client) {
 	var make_okcancel_handler = function (options) {
 		var ok = options.ok || function () {};
 		var cancel = options.cancel || function () {};
-
+		
 		return function (evt) {
 			if (evt.type === 'keydown' && evt.which === 27) {
 				// escape = cancel
