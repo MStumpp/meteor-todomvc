@@ -25,7 +25,7 @@
         <h1>todos</h1>
         <input id="new-todo" placeholder="What needs to be done?" autofocus>
     </header>
-    {{#if has_todos}}
+    {{#if todos}}
         {{> main}}
         {{> footer}}
     {{/if}}
@@ -33,11 +33,13 @@
 
 <template name="main">
     <section id="main">
-        {{#if todos_not_completed}}
-            <input id="toggle-all" type="checkbox">
-        {{else}}
-            <input id="toggle-all" type="checkbox" checked="checked">
-        {{/if}}
+    	{{#unless filter_selected filter.completed}}
+        	{{#if todos_not_completed}}
+            	<input id="toggle-all" type="checkbox">
+        	{{else}}
+            	<input id="toggle-all" type="checkbox" checked="checked">
+        	{{/if}}
+        {{/unless}}
         <label for="toggle-all">Mark all as complete</label>
         <ul id="todo-list">
             {{#each todos}}
@@ -72,24 +74,25 @@
 
 <template name="footer">
     <footer id="footer">
-        <span id="todo-count"><strong>{{todos_not_completed}}</strong> {{#if todos_one_not_completed}} item {{else}} items {{/if}} left</span>
+        <span id="todo-count"><strong>{{todos_not_completed}}</strong> 
+        	{{#if todos_one_not_completed}} item {{else}} items {{/if}} left</span>
         <ul id="filters">
             <li>
-                {{#if filter_all_selected}}
+                {{#if filter_selected filter.all}}
                     <span class="all selected">All</span>
                 {{else}}
                     <span class="all">All</span>
                 {{/if}}
             </li>
             <li>
-                {{#if filter_active_selected}}
+                {{#if filter_selected filter.active}}
                     <span class="active selected">Active</span>
                 {{else}}
                     <span class="active">Active</span>
                 {{/if}}
             </li>
             <li>
-                {{#if filter_completed_selected}}
+                {{#if filter_selected filter.completed}}
                     <span class="completed selected">Completed</span>
                 {{else}}
                     <span class="completed">Completed</span>
