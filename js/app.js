@@ -4,44 +4,6 @@ Session.set('filter', null);
 
 Session.set('editing_todo', null);
 
-//////////////////////////////////////////////////////////////////////
-// The following two functions are 1:1 copied from "Todos" example
-// The original code can be viewed at: https://github.com/meteor/meteor
-//////////////////////////////////////////////////////////////////////
-
-////////// Helpers for in-place editing //////////
-
-// Returns an event_map key for attaching "ok/cancel" events to
-// a text input (given by selector)
-var okcancel_events = function (selector) {
-  return 'keyup '+selector+', keydown '+selector+', focusout '+selector;
-};
-
-// Creates an event handler for interpreting "escape", "return", and "blur"
-// on a text field and calling "ok" or "cancel" callbacks.
-var make_okcancel_handler = function (options) {
-  var ok = options.ok || function () {};
-  var cancel = options.cancel || function () {};
-
-  return function (evt) {
-    if (evt.type === 'keydown' && evt.which === 27) {
-      // escape = cancel
-      cancel.call(this, evt);
-
-    } else if (evt.type === 'keyup' && evt.which === 13 ||
-               evt.type === 'focusout') {
-      // blur/return/enter = ok/submit if non-empty
-      var value = String(evt.target.value || "");
-      if (value)
-        ok.call(this, value, evt);
-      else
-        cancel.call(this, evt);
-    }
-  };
-};
-
-/////////////////////////////////////////////////////
-
 if (Meteor.is_client) {
     Template.todoapp.has_todos = function() {
         return Todos.find().count();
@@ -49,10 +11,10 @@ if (Meteor.is_client) {
 
     Template.todoapp.events = {};
 
-    Template.todoapp.events[ okcancel_events('#new-todo') ] =
+    Template.todoapp.events[okcancel_events('#new-todo')] =
       make_okcancel_handler({
         ok: function (title, evt) {
-          Todos.insert({title: title, completed: false});
+          Todos.insert({title: title, completed: false, created_at: new Date().getTime()});
           evt.target.value = "";
         }
       });
@@ -67,7 +29,7 @@ if (Meteor.is_client) {
                 filter.completed = true;
                 break;
         }
-        return Todos.find(filter, {sort: {title: 1}});
+        return Todos.find(filter, {sort: {created_at: 1}});
     };
 
     Template.main.todos_not_completed = function() {
@@ -79,7 +41,7 @@ if (Meteor.is_client) {
             var completed = true;
             if (!Todos.find({completed: false}).count()) completed = false;
             Todos.find({}).forEach(function(todo) {
-                Todos.update({"_id": todo._id}, {$set: {completed: completed}});
+                Todos.update({'_id': todo._id}, {$set: {completed: completed}});
             });
         }
     };
@@ -96,7 +58,7 @@ if (Meteor.is_client) {
         'click input.toggle': function() {
             Todos.update(this._id, {$set: {completed: !this.completed}});
         },
-        'dblclick .view': function() {
+        'dblclick div.view': function() {
             Session.set('editing_todo', this._id);
         },
         'click button.destroy': function() {
@@ -104,7 +66,7 @@ if (Meteor.is_client) {
         }
     };
 
-    Template.todo.events[ okcancel_events('li.editing input.edit') ] =
+    Template.todo.events[okcancel_events('li.editing input.edit')] =
       make_okcancel_handler({
           ok: function (value) {
             Todos.update(this._id, {$set: {title: value}});
@@ -153,4 +115,39 @@ if (Meteor.is_client) {
             Session.set('filter', 'completed');
         }
     };
-}
+    
+    /////////////////////////////////////////////////////////////////////////
+    // The following two functions are taken from the official Meteor 
+    // "Todos" example
+    // The original code can be viewed at: https://github.com/meteor/meteor
+    /////////////////////////////////////////////////////////////////////////
+
+    // Returns an event_map key for attaching "ok/cancel" events to
+    // a text input (given by selector)
+  	var okcancel_events = function (selector) {
+  		return 'keyup '+selector+', keydown '+selector+', focusout '+selector;
+	};
+
+	// Creates an event handler for interpreting "escape", "return", and "blur"
+	// on a text field and calling "ok" or "cancel" callbacks.
+	var make_okcancel_handler = function (options) {
+  		var ok = options.ok || function () {};
+  		var cancel = options.cancel || function () {};
+
+  		return function (evt) {
+    		if (evt.type === 'keydown' && evt.which === 27) {
+     			// escape = cancel
+      			cancel.call(this, evt);
+
+    		} else if (evt.type === 'keyup' && evt.which === 13 || 
+    			evt.type === 'focusout') {
+      			// blur/return/enter = ok/submit if non-empty
+      			var value = String(evt.target.value || '');
+      			if (value)
+        			ok.call(this, value, evt);
+      			else
+        			cancel.call(this, evt);
+    		}
+  		};
+	};
+};
