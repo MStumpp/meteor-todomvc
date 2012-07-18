@@ -37,38 +37,27 @@ if (Meteor.is_client) {
 				evt.type === 'focusout') {
 				// blur/return/enter = ok/submit if non-empty
 				var value = String(evt.target.value || '');
-				if (value)
+				if (value) {
 					ok.call(this, value, evt);
-				else
+				} else {
 					cancel.call(this, evt);
+				}
 			}
 		};
 	};
-
-	// Some global helpers
-
-	// Get the number of todos not completed
-	Handlebars.registerHelper('todos_not_completed', function() {
-		return Todos.find({completed: false}).count();
-	});
+	
+	// Some helpers
 	
 	// Get the number of todos completed
-	Handlebars.registerHelper('todos_completed', function() {
+	var todos_completed_helper = function() {
 		return Todos.find({completed: true}).count();
-	});
+	};
 	
-	// True if the requested filter type is currently selected,
-	// false otherwise
-	Handlebars.registerHelper('filter_selected', function(type) {
-		if (type === 'all')
-			return Session.equals('filter', null);			
-		return Session.equals('filter', type);
-	});
+	// Get the number of todos not completed
+	var todos_not_completed_helper = function() {
+		return Todos.find({completed: false}).count();
+	};
 	
-	Handlebars.registerHelper('filter', function() {
-		return {all: 'all', active: 'active', completed: 'completed'};
-	});
-
 	////
 	// Logic for the 'todoapp' partial which represents the whole app
 	////
@@ -84,7 +73,7 @@ if (Meteor.is_client) {
 	Template.todoapp.events[okcancel_events('#new-todo')] =
 		make_okcancel_handler({
 			ok: function (title, evt) {
-				Todos.insert({title: title, completed: false, 
+				Todos.insert({title: $.trim(title), completed: false, 
 					created_at: new Date().getTime()});
 				evt.target.value = '';
 			}
@@ -108,11 +97,15 @@ if (Meteor.is_client) {
 		return Todos.find(filter, {sort: {created_at: 1}});
 	};
 	
+	Template.main.todos_not_completed = todos_not_completed_helper;
+	
 	// Register click event for toggling complete/not complete button
 	Template.main.events = {
 		'click input#toggle-all': function(evt) {
 			var completed = true;
-			if (!Todos.find({completed: false}).count()) completed = false;
+			if (!Todos.find({completed: false}).count()) { 
+				completed = false;
+			}
 			Todos.find({}).forEach(function(todo) {
 				Todos.update({'_id': todo._id}, {$set: {completed: completed}});
 			});
@@ -138,7 +131,7 @@ if (Meteor.is_client) {
 		'click input.toggle': function() {
 			Todos.update(this._id, {$set: {completed: !this.completed}});
 		},
-		'dblclick .view label': function() {
+		'dblclick .view': function() {
 			Session.set('editing_todo', this._id);
 		},
 		'click button.destroy': function() {
@@ -150,37 +143,58 @@ if (Meteor.is_client) {
 	Template.todo.events[okcancel_events('li.editing input.edit')] =
 		make_okcancel_handler({
 			ok: function (value) {
-				Todos.update(this._id, {$set: {title: value}});
 				Session.set('editing_todo', null);
+				Todos.update(this._id, {$set: {title: $.trim(value)}});
 			},
 			cancel: function () {
 				Session.set('editing_todo', null);
+				Todos.remove(this._id);
 			}
 		});
 	
 	////
 	// Logic for the 'footer' partial
 	////
-		
+
+	Template.footer.todos_completed = todos_completed_helper;
+	
+	Template.footer.todos_not_completed = todos_not_completed_helper;
+	
 	// True if exactly one todo is not completed, false otherwise
 	// Used for handling pluralization of "item"/"items" word
 	Template.footer.todos_one_not_completed = function() {
 		return Todos.find({completed: false}).count() == 1;
 	};
-				
+	
+	Template.footer.filter = function() {
+		return {all: 'all', active: 'active', completed: 'completed'};
+	};
+	
+	// True if the requested filter type is currently selected,
+	// false otherwise
+	Template.footer.filter_selected = function(type) {
+		if (type === 'all') {
+			return Session.equals('filter', null);
+		}			
+		return Session.equals('filter', type);
+	};
+					
 	// Register click events for selecting filter type and
 	// clearing completed todos
 	Template.footer.events = {
 		'click button#clear-completed': function() {
 			Todos.remove({completed: true});
 		},
-		'click #filters span.all': function() {
+		'click #filters a.all': function(evt) {
+			evt.preventDefault();
 			Session.set('filter', null);
 		},
-		'click #filters span.active': function() {
+		'click #filters a.active': function(evt) {
+			evt.preventDefault();
 			Session.set('filter', 'active');
 		},
-		'click #filters span.completed': function() {
+		'click #filters a.completed': function(evt) {
+			evt.preventDefault();
 			Session.set('filter', 'completed');
 		}
 	};
